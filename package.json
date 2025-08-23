@@ -1,0 +1,21 @@
+{
+  "name": "middy-shared-validator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "middy middleware that uses shared schema validation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@middy/core": "^6.4.3",
+    "@middy/util": "^6.4.3",
+    "@standard-schema/spec": "^1.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  }
+}
