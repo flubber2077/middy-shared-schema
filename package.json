@@ -1,14 +1,21 @@
 {
   "name": "middy-shared-validator",
-  "version": "1.0.0",
-  "type": "module",
+  "version": "0.0.1",
   "description": "middy middleware that uses shared schema validation",
-  "main": "index.js",
+  "license": "ISC",
+  "author": "Dylan Jordan",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc",
+    "check-format": "prettier --check .",
+    "ci": "npm run build && npm run check-format",
+    "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@middy/core": "^6.4.3",
     "@middy/util": "^6.4.3",
