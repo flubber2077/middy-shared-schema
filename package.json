@@ -34,7 +34,7 @@
     "format": "prettier --write .",
     "local-release": "npm run ci && changeset version && changeset publish",
     "test": "vitest",
-    "test:ci": "vitest --coverage"
+    "test:ci": "vitest run --coverage"
   },
   "dependencies": {
     "@middy/util": "^6.0.0",
