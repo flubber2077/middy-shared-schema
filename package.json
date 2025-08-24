@@ -30,7 +30,7 @@
   "scripts": {
     "build": "tsc",
     "check-format": "prettier --check .",
-    "ci": "npm run build && npm run check-format",
+    "ci": "npm run test:ci && npm run build && npm run check-format",
     "format": "prettier --write .",
     "local-release": "npm run ci && changeset version && changeset publish",
     "test": "vitest",
