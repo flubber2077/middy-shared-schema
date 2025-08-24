@@ -1,5 +1,11 @@
 # middy-shared-schema
 
+## 0.0.4
+
+### Patch Changes
+
+- 889af7a: smaller final package size
+
 ## 0.0.3
 
 ### Patch Changes

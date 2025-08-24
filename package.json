@@ -1,6 +1,6 @@
 {
   "name": "middy-shared-schema",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "middy middleware that uses shared schema validation",
   "homepage": "https://github.com/flubber2077/middy-shared-schema",
   "bugs": {
