@@ -4,6 +4,7 @@ import type { Context } from "aws-lambda";
 import { describe, expect, test } from "vitest";
 import z from "zod";
 import { sharedSchemaValidator } from "./index.js";
+import type { Request } from "@middy/core";
 
 describe("basic tests", () => {
   test("expect empty middleware if nothing is supplied", () => {
@@ -31,14 +32,18 @@ describe("validation failure test suite", () => {
     ["event", "before", 400],
     ["context", "before", 400],
     ["response", "after", 500],
-  ])(
+  ] as const)(
     "if validation fails in %s, proper error is thrown",
     async (part, method, statusCode) => {
       const schema = z.object({});
       const middleware = sharedSchemaValidator({ [`${part}Schema`]: schema });
       const request = { [part]: "notAnObject" };
-      await expect(middleware[method](request)).rejects.toThrowError(HttpError);
-      await expect(middleware[method](request)).rejects.toMatchObject({
+      await expect(
+        middleware[method]!(request as unknown as Request),
+      ).rejects.toThrowError(HttpError);
+      await expect(
+        middleware[method]!(request as unknown as Request),
+      ).rejects.toMatchObject({
         statusCode,
         cause: { package: "middy-shared-schema", data: {} },
       });
@@ -60,7 +65,7 @@ describe("modify objects test suite", () => {
       options,
     });
     const request = { [part]: {} };
-    middleware[method]!(request);
+    middleware[method]!(request as unknown as Request);
     expect(request[part]!.field).toBe("exists");
   });
 
@@ -79,7 +84,7 @@ describe("modify objects test suite", () => {
         options,
       });
       const request = { [part]: {} };
-      await middleware[method]!(request);
+      await middleware[method]!(request as unknown as Request);
       console.log(request);
       expect(request[part]!.field).toBeUndefined();
     },
@@ -99,14 +104,31 @@ describe("modify objects test suite", () => {
       error: undefined,
       internal: undefined,
     };
-    await middleware.before!(request);
+    await middleware.before!(request as unknown as Request);
     expect(request.event).toBe("exists");
     expect(request.context).toStrictEqual({});
-    await middleware.after!(request);
+    await middleware.after!(request as unknown as Request);
     expect(request.response).toStrictEqual({});
   });
 });
 
-describe.todo("synchronous tests");
+describe("asynchronous tests", () => {
+  test("basic asynchronous test", async () => {
+    const schema = z.object().transform(async () => await "hi");
+
+    const middleware = sharedSchemaValidator({
+      eventSchema: schema,
+      contextSchema: schema as StandardSchema<Context>,
+      responseSchema: schema,
+      options: { modify: { event: true, context: true, response: true } },
+    });
+    const request = { event: {}, context: {}, response: {} };
+    await middleware.before!(request as Request);
+    await middleware.after!(request as Request);
+    expect(request.event).toBe('hi');
+        expect(request.context).toBe('hi');
+            expect(request.response).toBe('hi');
+  });
+});
 
 describe.todo("typing tests");
