@@ -1,5 +1,5 @@
 import { HttpError } from "@middy/util";
-import { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
+import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
 import type { Context } from "aws-lambda";
 import { describe, expect, test } from "vitest";
 import z from "zod";
@@ -53,22 +53,22 @@ describe("modify objects test suite", () => {
     ["event", "before"],
     ["context", "before"],
     ["response", "after"],
-  ])("modify %s when options are set true", async (part, method) => {
+  ] as const)("modify %s when options are set true", async (part, method) => {
     const options = { modify: { response: true, event: true, context: true } };
     const middleware = sharedSchemaValidator({
       [`${part}Schema`]: modifyingSchema,
       options,
     });
     const request = { [part]: {} };
-    middleware[method](request);
-    expect(request[part].field).toBe("exists");
+    middleware[method]!(request);
+    expect(request[part]!.field).toBe("exists");
   });
 
   test.each([
     ["event", "before"],
     ["context", "before"],
     ["response", "after"],
-  ])("don't modify %s when options are set false", async (part, method) => {
+  ] as const)("don't modify %s when options are set false", async (part, method) => {
     const options = {
       modify: { response: false, event: false, context: false },
     };
@@ -77,9 +77,9 @@ describe("modify objects test suite", () => {
       options,
     });
     const request = { [part]: {} };
-    await middleware[method](request);
+    await middleware[method]!(request);
     console.log(request);
-    expect(request[part].field).toBeUndefined();
+    expect(request[part]!.field).toBeUndefined();
   });
 
   test("default modify options", async () => {
