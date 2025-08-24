@@ -14,8 +14,7 @@
     "check-format": "prettier --check .",
     "ci": "npm run build && npm run check-format",
     "format": "prettier --write .",
-    "local-release": "npm run ci && changeset version && changeset publish",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "local-release": "npm run ci && changeset version && changeset publish"
   },
   "dependencies": {
     "@middy/util": "^6.0.0",
