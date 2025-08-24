@@ -1,6 +1,6 @@
 {
   "name": "middy-shared-schema",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "middy middleware that uses shared schema validation",
   "keywords": [
     "middy",

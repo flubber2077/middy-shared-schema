@@ -1,5 +1,11 @@
 # middy-shared-schema
 
+## 0.0.7
+
+### Patch Changes
+
+- e4ac2d8: add commonjs support
+
 ## 0.0.6
 
 ### Patch Changes
