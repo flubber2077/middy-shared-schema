@@ -65,7 +65,7 @@ middy<APIGatewayProxyEvent>()
 
 By default, events will be transformed by the validation. This behavior can be modified to also transform Contexts and Responses, or turned off altogether to just allow for non-transforming validation.
 
-
 ## Contribution
+
 Any and all issues and PRs are **greatly** appreciated.
 Please leave a star if this project was helpful to you.
