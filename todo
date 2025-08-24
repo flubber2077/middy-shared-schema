@@ -2,5 +2,6 @@
 - 100% test coverage
 - support commonjs
 - write more of readme
+- have generated middleware know if `before` and `after` are undefined or not
 much later todos
 - format error messages depending on package used

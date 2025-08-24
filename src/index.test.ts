@@ -104,4 +104,6 @@ describe("modify objects test suite", () => {
   });
 });
 
+describe.todo("synchronous tests");
+
 describe.todo("typing tests");
