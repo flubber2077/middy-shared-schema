@@ -84,5 +84,6 @@ const getValidationError = (
   result: StandardSchema.FailureResult,
 ) =>
   createError(code, `${objectName} object failed validation`, {
-    cause: { package: "", data: result.issues },
+    // TODO: change name of package
+    cause: { package: "middy-shared-schema", data: result.issues },
   });

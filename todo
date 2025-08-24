@@ -1,0 +1,6 @@
+- rename package to 'middy-standard-schema'
+- 100% test coverage
+- support commonjs
+- write more of readme
+much later todos
+- format error messages depending on package used
