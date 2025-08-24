@@ -1,5 +1,11 @@
 # middy-shared-schema
 
+## 0.0.5
+
+### Patch Changes
+
+- 19df9c3: smaller package size and add tests and Readme
+
 ## 0.0.4
 
 ### Patch Changes
