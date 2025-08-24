@@ -3,6 +3,16 @@
   "version": "0.0.4",
   "description": "middy middleware that uses shared schema validation",
   "homepage": "https://github.com/flubber2077/middy-shared-schema",
+  "keywords": [
+    "middy",
+    "validation",
+    "validator",
+    "arktype",
+    "zod",
+    "valibot",
+    "middleware",
+    "typescript"
+  ],
   "bugs": {
     "url": "https://github.com/flubber2077/middy-shared-schema"
   },
@@ -22,7 +32,9 @@
     "check-format": "prettier --check .",
     "ci": "npm run build && npm run check-format",
     "format": "prettier --write .",
-    "local-release": "npm run ci && changeset version && changeset publish"
+    "local-release": "npm run ci && changeset version && changeset publish",
+    "test": "vitest",
+    "test:ci": "vitest --coverage"
   },
   "dependencies": {
     "@middy/util": "^6.0.0",
@@ -30,8 +42,10 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.6",
+    "@vitest/coverage-v8": "^3.2.4",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
     "zod": "^4.1.0"
   },
   "peerDependencies": {
