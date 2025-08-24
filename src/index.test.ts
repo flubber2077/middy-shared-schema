@@ -1,6 +1,6 @@
 import { HttpError } from "@middy/util";
 import { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
-import { Context } from "aws-lambda";
+import type { Context } from "aws-lambda";
 import { describe, expect, test } from "vitest";
 import z from "zod";
 import { sharedSchemaValidator } from "./index.js";
