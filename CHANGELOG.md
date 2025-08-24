@@ -1,5 +1,12 @@
 # middy-shared-schema
 
+## 0.0.6
+
+### Patch Changes
+
+- 3b31ba2: add prettier ignore
+- fbd69b4: fix tests in ci
+
 ## 0.0.5
 
 ### Patch Changes
