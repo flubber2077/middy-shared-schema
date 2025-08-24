@@ -68,19 +68,22 @@ describe("modify objects test suite", () => {
     ["event", "before"],
     ["context", "before"],
     ["response", "after"],
-  ] as const)("don't modify %s when options are set false", async (part, method) => {
-    const options = {
-      modify: { response: false, event: false, context: false },
-    };
-    const middleware = sharedSchemaValidator({
-      [`${part}Schema`]: modifyingSchema,
-      options,
-    });
-    const request = { [part]: {} };
-    await middleware[method]!(request);
-    console.log(request);
-    expect(request[part]!.field).toBeUndefined();
-  });
+  ] as const)(
+    "don't modify %s when options are set false",
+    async (part, method) => {
+      const options = {
+        modify: { response: false, event: false, context: false },
+      };
+      const middleware = sharedSchemaValidator({
+        [`${part}Schema`]: modifyingSchema,
+        options,
+      });
+      const request = { [part]: {} };
+      await middleware[method]!(request);
+      console.log(request);
+      expect(request[part]!.field).toBeUndefined();
+    },
+  );
 
   test("default modify options", async () => {
     const modifyingSchema = z.object({}).transform((o) => "exists");
