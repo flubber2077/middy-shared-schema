@@ -125,9 +125,9 @@ describe("asynchronous tests", () => {
     const request = { event: {}, context: {}, response: {} };
     await middleware.before!(request as Request);
     await middleware.after!(request as Request);
-    expect(request.event).toBe('hi');
-        expect(request.context).toBe('hi');
-            expect(request.response).toBe('hi');
+    expect(request.event).toBe("hi");
+    expect(request.context).toBe("hi");
+    expect(request.response).toBe("hi");
   });
 });
 
