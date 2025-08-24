@@ -1,6 +1,6 @@
 {
   "name": "middy-shared-schema",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "middy middleware that uses shared schema validation",
   "license": "ISC",
   "author": "Dylan Jordan",
