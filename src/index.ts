@@ -1,15 +1,11 @@
 import type middy from "@middy/core";
 import { createError } from "@middy/util";
-import type { StandardSchemaV1 } from "@standard-schema/spec";
+import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
+import type { Context } from "aws-lambda";
 
-type ValidationInput<T extends StandardSchemaV1> = {
-  eventSchema?: T;
-  contextSchema?: T;
-  responseSchema?: T;
-  options?: {
-    modify?: { event?: boolean; context?: boolean; response?: boolean };
-  };
-};
+type TypeFromSchema<T extends StandardSchema> = NonNullable<
+  T["~standard"]["types"]
+>;
 
 const modifyDefaults = {
   event: true,
@@ -17,12 +13,28 @@ const modifyDefaults = {
   response: false,
 } as const;
 
-export const commonValidationMiddleware = <T extends StandardSchemaV1>({
+export const sharedSchemaValidator = <
+  E extends StandardSchema,
+  C extends StandardSchema<Context>,
+  R extends StandardSchema,
+>({
   eventSchema,
   contextSchema,
   responseSchema,
   options,
-}: ValidationInput<T>): middy.MiddlewareObj => {
+}: {
+  eventSchema?: E;
+  contextSchema?: C;
+  responseSchema?: R;
+  options?: {
+    modify?: { event?: boolean; context?: boolean; response?: boolean };
+  };
+}): middy.MiddlewareObj<
+  TypeFromSchema<NonNullable<typeof eventSchema>>["output"],
+  TypeFromSchema<NonNullable<typeof responseSchema>>["input"],
+  Error,
+  TypeFromSchema<NonNullable<typeof contextSchema>>["output"]
+> => {
   const modify = { ...modifyDefaults, ...options?.modify };
   const before: middy.MiddlewareFn = async (request) => {
     if (eventSchema) {
@@ -32,7 +44,7 @@ export const commonValidationMiddleware = <T extends StandardSchemaV1>({
       if (result.issues) {
         throw getValidationError(400, "Event", result);
       }
-      if (modify.event) request.event = result;
+      if (modify.event) request.event = result.value;
     }
 
     if (contextSchema) {
@@ -43,7 +55,7 @@ export const commonValidationMiddleware = <T extends StandardSchemaV1>({
         throw getValidationError(400, "Context", result);
       }
 
-      if (modify.context) request.context = result;
+      if (modify.context) request.context = result.value;
     }
   };
 
@@ -56,7 +68,7 @@ export const commonValidationMiddleware = <T extends StandardSchemaV1>({
         throw getValidationError(500, "Response", result);
       }
 
-      if (modify.response) request.response = result;
+      if (modify.response) request.response = result.value;
     }
   };
 
@@ -69,13 +81,8 @@ export const commonValidationMiddleware = <T extends StandardSchemaV1>({
 const getValidationError = (
   code: number,
   objectName: string,
-  result: StandardSchemaV1.FailureResult,
+  result: StandardSchema.FailureResult,
 ) =>
   createError(code, `${objectName} object failed validation`, {
     cause: { package: "", data: result.issues },
   });
-
-// TODO:
-// name package
-// make sure it works
-// idk look for best practices. no one is making types work better for this library mostly.
