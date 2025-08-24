@@ -3,12 +3,12 @@ import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
 import type { Context } from "aws-lambda";
 import { describe, expect, test } from "vitest";
 import z from "zod";
-import { sharedSchemaValidator } from "./index.js";
+import { standardSchemaValidator } from "./index.js";
 import type { Request } from "@middy/core";
 
 describe("basic tests", () => {
   test("expect empty middleware if nothing is supplied", () => {
-    const middleware = sharedSchemaValidator({});
+    const middleware = standardSchemaValidator({});
     expect(middleware.before).toBeUndefined();
     expect(middleware.after).toBeUndefined();
     expect(middleware.onError).toBeUndefined();
@@ -16,7 +16,7 @@ describe("basic tests", () => {
 
   test("expect middleware to be populated if schemes are supplied", () => {
     const mockSchema = z.object();
-    const middleware = sharedSchemaValidator({
+    const middleware = standardSchemaValidator({
       eventSchema: mockSchema,
       responseSchema: mockSchema,
     });
@@ -36,7 +36,7 @@ describe("validation failure test suite", () => {
     "if validation fails in %s, proper error is thrown",
     async (part, method, statusCode) => {
       const schema = z.object({});
-      const middleware = sharedSchemaValidator({ [`${part}Schema`]: schema });
+      const middleware = standardSchemaValidator({ [`${part}Schema`]: schema });
       const request = { [part]: "notAnObject" };
       await expect(
         middleware[method]!(request as unknown as Request),
@@ -45,7 +45,7 @@ describe("validation failure test suite", () => {
         middleware[method]!(request as unknown as Request),
       ).rejects.toMatchObject({
         statusCode,
-        cause: { package: "middy-shared-schema", data: {} },
+        cause: { package: "middy-standard-schema", data: {} },
       });
     },
   );
@@ -60,7 +60,7 @@ describe("modify objects test suite", () => {
     ["response", "after"],
   ] as const)("modify %s when options are set true", async (part, method) => {
     const options = { modify: { response: true, event: true, context: true } };
-    const middleware = sharedSchemaValidator({
+    const middleware = standardSchemaValidator({
       [`${part}Schema`]: modifyingSchema,
       options,
     });
@@ -79,7 +79,7 @@ describe("modify objects test suite", () => {
       const options = {
         modify: { response: false, event: false, context: false },
       };
-      const middleware = sharedSchemaValidator({
+      const middleware = standardSchemaValidator({
         [`${part}Schema`]: modifyingSchema,
         options,
       });
@@ -92,7 +92,7 @@ describe("modify objects test suite", () => {
 
   test("default modify options", async () => {
     const modifyingSchema = z.object({}).transform((o) => "exists");
-    const middleware = sharedSchemaValidator({
+    const middleware = standardSchemaValidator({
       eventSchema: modifyingSchema,
       contextSchema: modifyingSchema as StandardSchema<Context>,
       responseSchema: modifyingSchema,
@@ -116,7 +116,7 @@ describe("asynchronous tests", () => {
   test("basic asynchronous test", async () => {
     const schema = z.object().transform(async () => await "hi");
 
-    const middleware = sharedSchemaValidator({
+    const middleware = standardSchemaValidator({
       eventSchema: schema,
       contextSchema: schema as StandardSchema<Context>,
       responseSchema: schema,

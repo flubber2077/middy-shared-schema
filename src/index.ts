@@ -13,7 +13,7 @@ const modifyDefaults = {
   response: false,
 } as const;
 
-export const sharedSchemaValidator = <
+export const standardSchemaValidator = <
   E extends StandardSchema,
   C extends StandardSchema<Context>,
   R extends StandardSchema,
@@ -84,6 +84,5 @@ const getValidationError = (
   result: StandardSchema.FailureResult,
 ) =>
   createError(code, `${objectName} object failed validation`, {
-    // TODO: change name of package
-    cause: { package: "middy-shared-schema", data: result.issues },
+    cause: { package: "middy-standard-schema", data: result.issues },
   });

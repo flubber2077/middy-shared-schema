@@ -1,4 +1,4 @@
-# Middy-Shared-Schema
+# Middy-Standard-Schema
 
 A Standard-Schema based Middy Validator
 
@@ -7,7 +7,7 @@ A Standard-Schema based Middy Validator
 ### Install
 
 ```bash
-npm install middy-shared-schema
+npm install middy-standard-schema
 ```
 
 ### Usage
@@ -22,7 +22,7 @@ export const eventSchema = z.object({
 });
 
 export const handler = middy(lambdaFunction).use(
-  sharedSchemaValidator({ eventSchema }),
+  standardSchemaValidator({ eventSchema }),
 );
 ```
 
@@ -35,7 +35,7 @@ import z from "zod";
 import { type } from "arktype";
 import * as v from "valibot";
 
-const validator = sharedSchemaValidator({
+const validator = standardSchemaValidator({
   beforeSchema: z.object(),
   contextSchema: type({}),
   responseSchema: v.object({}),
@@ -52,7 +52,7 @@ const eventSchema = z.looseObject({
 });
 
 middy<APIGatewayProxyEvent>()
-  .use(sharedSchemaValidator({ eventSchema }))
+  .use(standardSchemaValidator({ eventSchema }))
   .handler((event) => {
     event.queryStringParameters.search;
     //                          ^? (property) search: string
