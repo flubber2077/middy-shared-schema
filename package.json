@@ -1,5 +1,5 @@
 {
-  "name": "middy-shared-validator",
+  "name": "middy-shared-schema",
   "version": "0.0.1",
   "description": "middy middleware that uses shared schema validation",
   "license": "ISC",

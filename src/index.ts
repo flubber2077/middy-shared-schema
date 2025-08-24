@@ -3,8 +3,8 @@ import { createError } from "@middy/util";
 import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
 import type { Context } from "aws-lambda";
 
-type TypeFromSchema<T extends StandardSchema> = NonNullable<
-  T["~standard"]["types"]
+type TypeFromSchema<T extends StandardSchema | undefined> = NonNullable<
+  NonNullable<T>["~standard"]["types"]
 >;
 
 const modifyDefaults = {
@@ -30,10 +30,10 @@ export const sharedSchemaValidator = <
     modify?: { event?: boolean; context?: boolean; response?: boolean };
   };
 }): middy.MiddlewareObj<
-  TypeFromSchema<NonNullable<typeof eventSchema>>["output"],
-  TypeFromSchema<NonNullable<typeof responseSchema>>["input"],
+  TypeFromSchema<typeof eventSchema>["output"],
+  TypeFromSchema<typeof responseSchema>["input"],
   Error,
-  TypeFromSchema<NonNullable<typeof contextSchema>>["output"]
+  TypeFromSchema<typeof contextSchema>["output"]
 > => {
   const modify = { ...modifyDefaults, ...options?.modify };
   const before: middy.MiddlewareFn = async (request) => {
