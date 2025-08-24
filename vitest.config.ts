@@ -6,7 +6,7 @@ export default defineConfig({
       enabled: true,
       include: ["src"],
       thresholds: {
-        branches: 25,
+        branches: 85.71,
         functions: 25,
         lines: 41.81,
         statements: 41.81,

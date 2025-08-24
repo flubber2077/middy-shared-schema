@@ -1,5 +1,6 @@
 import { describe, test, vi, expect } from "vitest";
 import { sharedSchemaValidator } from "./index.js";
+import z from "zod";
 
 describe("basic tests", () => {
   test("expect empty middleware if nothing is supplied", () => {
@@ -8,7 +9,15 @@ describe("basic tests", () => {
     expect(middleware.after).toBeUndefined();
     expect(middleware.onError).toBeUndefined();
   });
-});
-test("something", () => {
-  expect(1 + 1).toBe(2);
+
+  test("expect middleware to be populated if schemes are supplied", () => {
+    const mockSchema = z.object();
+    const middleware = sharedSchemaValidator({
+      eventSchema: mockSchema,
+      responseSchema: mockSchema,
+    });
+    expect(middleware.before).not.toBeUndefined();
+    expect(middleware.after).not.toBeUndefined();
+    expect(middleware.onError).toBeUndefined();
+  });
 });
