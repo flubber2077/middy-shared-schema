@@ -1,4 +1,5 @@
 # Middy-Standard-Schema
+
 [![CI](https://github.com/flubber2077/middy-standard-schema/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/flubber2077/middy-standard-schema/actions/workflows/ci.yml)
 
 A Standard-Schema based Middy Validator
