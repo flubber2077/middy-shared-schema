@@ -1,6 +1,5 @@
-- rename package to 'middy-standard-schema'
-- 100% test coverage
 - have generated middleware know if `before` and `after` are undefined or not
 
 much later todos
+
 - format error messages depending on package used
