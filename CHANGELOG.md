@@ -1,5 +1,11 @@
 # middy-standard-schema
 
+## 0.1.1
+
+### Patch Changes
+
+- 4651335: shrink package by removing peer dependency, update README
+
 ## 0.1.0
 
 ### Minor Changes
