@@ -1,10 +1,11 @@
 import { HttpError } from "@middy/util";
 import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
-import type { Context } from "aws-lambda";
-import { describe, expect, test } from "vitest";
+import type { APIGatewayProxyEvent } from "aws-lambda";
+import { describe, expect, expectTypeOf, test } from "vitest";
 import z from "zod";
 import { standardSchemaValidator } from "./index.js";
 import type { Request } from "@middy/core";
+import middy from "@middy/core";
 
 describe("basic tests", () => {
   test("expect empty middleware if nothing is supplied", () => {
@@ -91,10 +92,10 @@ describe("modify objects test suite", () => {
   );
 
   test("default modify options", async () => {
-    const modifyingSchema = z.object({}).transform((o) => "exists");
+    const modifyingSchema = z.object({}).transform(() => "exists");
     const middleware = standardSchemaValidator({
       eventSchema: modifyingSchema,
-      contextSchema: modifyingSchema as StandardSchema<Context>,
+      contextSchema: modifyingSchema as StandardSchema<Request["context"]>,
       responseSchema: modifyingSchema,
     });
     const request = {
@@ -118,7 +119,7 @@ describe("asynchronous tests", () => {
 
     const middleware = standardSchemaValidator({
       eventSchema: schema,
-      contextSchema: schema as StandardSchema<Context>,
+      contextSchema: schema as StandardSchema<Request["context"]>,
       responseSchema: schema,
       options: { modify: { event: true, context: true, response: true } },
     });
@@ -132,3 +133,44 @@ describe("asynchronous tests", () => {
 });
 
 describe.todo("typing tests");
+
+describe("typing tests", () => {
+  describe("event typing tests", () => {
+    test("headers are able to be specified", () => {
+      const eventSchema = z.looseObject({
+        headers: z.looseObject({ search: z.string() }),
+      });
+
+      middy<APIGatewayProxyEvent>()
+        .use(standardSchemaValidator({ eventSchema }))
+        .handler((event) => {
+          expectTypeOf(event.headers.search).toEqualTypeOf<string>();
+          expectTypeOf(event.headers.other).toEqualTypeOf<string | undefined>();
+        });
+    });
+
+    test("able to override body", () => {
+      const eventSchema = z.looseObject({
+        body: z.object({ thing: z.string({}) }),
+      });
+
+      middy<APIGatewayProxyEvent>()
+        .use(standardSchemaValidator({ eventSchema }))
+        .handler((event) => {
+          expectTypeOf(event).not.toEqualTypeOf<APIGatewayProxyEvent>();
+          expectTypeOf(event).toExtend<APIGatewayProxyEvent>();
+          expectTypeOf(event.body.thing).toEqualTypeOf<string>();
+        });
+    });
+
+    test("normal passthrough of event type if event is not supplied", () => {
+      const responseSchema = z.object();
+      middy<APIGatewayProxyEvent>()
+        .use(standardSchemaValidator({ responseSchema }))
+        .handler((event) => {
+          expectTypeOf(event).toEqualTypeOf<APIGatewayProxyEvent>();
+          expectTypeOf(event.body).toExtend<string | null>();
+        });
+    });
+  });
+});

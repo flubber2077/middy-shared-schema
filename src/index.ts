@@ -1,11 +1,6 @@
-import type middy from "@middy/core";
+import type { MiddlewareObj, Request } from "@middy/core";
 import { createError } from "@middy/util";
 import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
-import type { Context } from "aws-lambda";
-
-type TypeFromSchema<T extends StandardSchema | undefined> = NonNullable<
-  NonNullable<T>["~standard"]["types"]
->;
 
 const modifyDefaults = {
   event: true,
@@ -15,7 +10,7 @@ const modifyDefaults = {
 
 export const standardSchemaValidator = <
   E extends StandardSchema,
-  C extends StandardSchema<Context>,
+  C extends StandardSchema<Request["context"]>,
   R extends StandardSchema,
 >({
   eventSchema,
@@ -29,14 +24,14 @@ export const standardSchemaValidator = <
   options?: {
     modify?: { event?: boolean; context?: boolean; response?: boolean };
   };
-}): middy.MiddlewareObj<
-  TypeFromSchema<typeof eventSchema>["output"],
-  TypeFromSchema<typeof responseSchema>["input"],
+}): MiddlewareObj<
+  StandardSchema.InferOutput<E>,
+  StandardSchema.InferInput<R>,
   Error,
-  TypeFromSchema<typeof contextSchema>["output"]
+  StandardSchema.InferOutput<C>
 > => {
   const modify = { ...modifyDefaults, ...options?.modify };
-  const before: middy.MiddlewareFn = async (request) => {
+  const before = async (request: Request) => {
     if (eventSchema) {
       let result = eventSchema["~standard"].validate(request.event);
       if (result instanceof Promise) result = await result;
@@ -59,7 +54,7 @@ export const standardSchemaValidator = <
     }
   };
 
-  const after: middy.MiddlewareFn = async (request) => {
+  const after = async (request: Request) => {
     if (responseSchema) {
       let result = responseSchema["~standard"].validate(request.response);
       if (result instanceof Promise) result = await result;
