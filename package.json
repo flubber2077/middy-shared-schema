@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.6",
+    "@middy/http-error-handler": "^6.4.4",
     "@types/aws-lambda": "^8.10.152",
     "@vitest/coverage-v8": "^3.2.4",
     "prettier": "^3.6.2",

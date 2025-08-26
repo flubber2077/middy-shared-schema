@@ -1,11 +1,12 @@
+import type { Request } from "@middy/core";
+import middy from "@middy/core";
+import httpErrorHandler from "@middy/http-error-handler";
 import { HttpError } from "@middy/util";
 import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
-import type { APIGatewayProxyEvent } from "aws-lambda";
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { describe, expect, expectTypeOf, test } from "vitest";
 import z from "zod";
 import { standardSchemaValidator } from "./index.js";
-import type { Request } from "@middy/core";
-import middy from "@middy/core";
 
 describe("basic tests", () => {
   test("expect empty middleware if nothing is supplied", () => {
@@ -86,7 +87,6 @@ describe("modify objects test suite", () => {
       });
       const request = { [part]: {} };
       await middleware[method]!(request as unknown as Request);
-      console.log(request);
       expect(request[part]!.field).toBeUndefined();
     },
   );
@@ -132,8 +132,59 @@ describe("asynchronous tests", () => {
   });
 });
 
-describe.todo("typing tests");
+describe("error handling tests", () => {
+  test("failed validation throws http error with cause", async () => {
+    const func = middy().use(
+      standardSchemaValidator({ eventSchema: z.string() }),
+    );
 
+    await expect(
+      func(1234 as unknown as string, {} as Request["context"]),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: JSON.stringify({ message: "Event object failed validation" }),
+    });
+  });
+
+  test("error formatting", async () => {
+    const func = middy().use(
+      standardSchemaValidator({
+        eventSchema: z.string(),
+        options: { errorFormatter: z.prettifyError },
+      }),
+    );
+
+    await expect(
+      func(1234 as unknown as string, {} as Request["context"]),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: JSON.stringify({
+        message: "✖ Invalid input: expected string, received number",
+      }),
+    });
+  });
+
+  describe("error conversion checks", () => {
+    test("error is properly returned", async () => {
+      const thing = middy<APIGatewayProxyEvent, APIGatewayProxyResult>()
+        .use(httpErrorHandler({ logger: false }))
+        .use(standardSchemaValidator({ eventSchema: z.strictObject({}) }));
+      await expect(
+        thing(
+          { hi: "hi" } as unknown as Record<string, never> &
+            APIGatewayProxyEvent,
+          {} as Request["context"],
+        ),
+      ).resolves.toMatchObject({
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "Event object failed validation" }),
+      });
+    });
+  });
+});
+
+// Middy does not propagate the modified context or response to the handler
 describe("typing tests", () => {
   describe("event typing tests", () => {
     test("headers are able to be specified", () => {

@@ -23,6 +23,7 @@ export const standardSchemaValidator = <
   responseSchema?: R;
   options?: {
     modify?: { event?: boolean; context?: boolean; response?: boolean };
+    errorFormatter?: (input: StandardSchema.FailureResult) => string;
   };
 }): MiddlewareObj<
   StandardSchema.InferOutput<E>,
@@ -31,13 +32,15 @@ export const standardSchemaValidator = <
   StandardSchema.InferOutput<C>
 > => {
   const modify = { ...modifyDefaults, ...options?.modify };
+  const errorFormatter = options?.errorFormatter;
+
   const before = async (request: Request) => {
     if (eventSchema) {
       let result = eventSchema["~standard"].validate(request.event);
       if (result instanceof Promise) result = await result;
 
       if (result.issues) {
-        throw getValidationError(400, "Event", result);
+        throw getValidationError(400, "Event", result, errorFormatter);
       }
       if (modify.event) request.event = result.value;
     }
@@ -47,7 +50,7 @@ export const standardSchemaValidator = <
       if (result instanceof Promise) result = await result;
 
       if (result.issues) {
-        throw getValidationError(400, "Context", result);
+        throw getValidationError(400, "Context", result, errorFormatter);
       }
 
       if (modify.context) request.context = result.value;
@@ -77,7 +80,12 @@ const getValidationError = (
   code: number,
   objectName: string,
   result: StandardSchema.FailureResult,
-) =>
-  createError(code, `${objectName} object failed validation`, {
+  errorFormatter?: (input: StandardSchema.FailureResult) => string,
+) => {
+  const message = errorFormatter
+    ? errorFormatter(result)
+    : `${objectName} object failed validation`;
+  return createError(code, JSON.stringify({ message }), {
     cause: { package: "middy-standard-schema", data: result.issues },
   });
+};
