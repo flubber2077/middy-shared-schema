@@ -5,12 +5,6 @@ import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
 type RequestPart = "event" | "context" | "response";
 type ErrorFormatter = (input: StandardSchema.FailureResult) => string;
 
-const modifyDefaults = {
-  event: true,
-  context: false,
-  response: false,
-} as const;
-
 export const standardSchemaValidator = <
   E extends StandardSchema,
   C extends StandardSchema<Request["context"]>,
@@ -19,50 +13,30 @@ export const standardSchemaValidator = <
   eventSchema,
   contextSchema,
   responseSchema,
-  options,
+  errorFormatter,
 }: {
   eventSchema?: E;
   contextSchema?: C;
   responseSchema?: R;
-  options?: {
-    modify?: Record<RequestPart, boolean>;
-    errorFormatter?: ErrorFormatter;
-  };
+  errorFormatter?: ErrorFormatter;
 }): MiddlewareObj<
   StandardSchema.InferOutput<E>,
   StandardSchema.InferInput<R>,
   Error,
   StandardSchema.InferOutput<C>
 > => {
-  const modify = { ...modifyDefaults, ...options?.modify };
-  const errorFormatter = options?.errorFormatter;
+  const getValidator = buildValidator(errorFormatter);
 
+  const eventValidator = getValidator(eventSchema, "event", 400);
+  const contextValidator = getValidator(contextSchema, "context", 400);
   const before = async (request: Request) => {
-    if (eventSchema) {
-      let result = eventSchema["~standard"].validate(request.event);
-      if (result instanceof Promise) result = await result;
-      if (result.issues)
-        throw getValidationError(400, "Event", result, errorFormatter);
-      if (modify.event) request.event = result.value;
-    }
-
-    if (contextSchema) {
-      let result = contextSchema["~standard"].validate(request.context);
-      if (result instanceof Promise) result = await result;
-      if (result.issues)
-        throw getValidationError(400, "Context", result, errorFormatter);
-      if (modify.context) request.context = result.value;
-    }
+    await eventValidator(request);
+    await contextValidator(request);
   };
 
+  const responseValidator = getValidator(responseSchema, "response", 500);
   const after = async (request: Request) => {
-    if (responseSchema) {
-      let result = responseSchema["~standard"].validate(request.response);
-      if (result instanceof Promise) result = await result;
-      if (result.issues)
-        throw getValidationError(500, "Response", result, errorFormatter);
-      if (modify.response) request.response = result.value;
-    }
+    await responseValidator(request);
   };
 
   return {
@@ -70,6 +44,23 @@ export const standardSchemaValidator = <
     after: responseSchema ? after : undefined,
   };
 };
+
+const buildValidator =
+  (errorFormatter: ErrorFormatter | undefined) =>
+  <T extends StandardSchema>(
+    schema: T | undefined,
+    part: RequestPart,
+    code: number,
+  ) => {
+    if (!schema) return emptyFunction;
+    return async (request: Request) => {
+      let result = schema["~standard"].validate(request[part]);
+      if (result instanceof Promise) result = await result;
+      if (result.issues)
+        throw getValidationError(code, part, result, errorFormatter);
+      request[part] = result.value;
+    };
+  };
 
 const getValidationError = (
   code: number,
@@ -79,8 +70,10 @@ const getValidationError = (
 ) => {
   const message = errorFormatter
     ? errorFormatter(result)
-    : `${objectName} object failed validation`;
+    : `The ${objectName} object failed validation`;
   return createError(code, JSON.stringify({ message }), {
     cause: { package: "middy-standard-schema", data: result.issues },
   });
 };
+
+const emptyFunction = () => void {};

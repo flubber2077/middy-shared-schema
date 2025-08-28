@@ -54,62 +54,36 @@ describe("validation failure test suite", () => {
 });
 
 describe("modify objects test suite", () => {
-  const modifyingSchema = z.object({ field: z.string().default("exists") });
+  const modifyingSchema = z.object({}).transform(() => "exists");
+  const middleware = standardSchemaValidator({
+    eventSchema: modifyingSchema,
+    contextSchema: modifyingSchema as StandardSchema<Request["context"]>,
+    responseSchema: modifyingSchema,
+  });
+  const request = {
+    event: {},
+    context: {},
+    response: {},
+    error: undefined,
+    internal: undefined,
+  };
 
-  test.each([
-    ["event", "before"],
-    ["context", "before"],
-    ["response", "after"],
-  ] as const)("modify %s when options are set true", async (part, method) => {
-    const options = { modify: { response: true, event: true, context: true } };
-    const middleware = standardSchemaValidator({
-      [`${part}Schema`]: modifyingSchema,
-      options,
+  test("test modify of before", async () => {
+    await middleware.before!(request as unknown as Request);
+    expect(request).toMatchObject({
+      event: "exists",
+      context: "exists",
+      response: {},
     });
-    const request = { [part]: {} };
-    middleware[method]!(request as unknown as Request);
-    expect(request[part]!.field).toBe("exists");
   });
 
-  test.each([
-    ["event", "before"],
-    ["context", "before"],
-    ["response", "after"],
-  ] as const)(
-    "don't modify %s when options are set false",
-    async (part, method) => {
-      const options = {
-        modify: { response: false, event: false, context: false },
-      };
-      const middleware = standardSchemaValidator({
-        [`${part}Schema`]: modifyingSchema,
-        options,
-      });
-      const request = { [part]: {} };
-      await middleware[method]!(request as unknown as Request);
-      expect(request[part]!.field).toBeUndefined();
-    },
-  );
-
-  test("default modify options", async () => {
-    const modifyingSchema = z.object({}).transform(() => "exists");
-    const middleware = standardSchemaValidator({
-      eventSchema: modifyingSchema,
-      contextSchema: modifyingSchema as StandardSchema<Request["context"]>,
-      responseSchema: modifyingSchema,
-    });
-    const request = {
+    test("test modify of before", async () => {
+    await middleware.after!(request as unknown as Request);
+    expect(request).toMatchObject({
       event: {},
       context: {},
-      response: {},
-      error: undefined,
-      internal: undefined,
-    };
-    await middleware.before!(request as unknown as Request);
-    expect(request.event).toBe("exists");
-    expect(request.context).toStrictEqual({});
-    await middleware.after!(request as unknown as Request);
-    expect(request.response).toStrictEqual({});
+      response: 'exists',
+    });
   });
 });
 
@@ -121,7 +95,6 @@ describe("asynchronous tests", () => {
       eventSchema: schema,
       contextSchema: schema as StandardSchema<Request["context"]>,
       responseSchema: schema,
-      options: { modify: { event: true, context: true, response: true } },
     });
     const request = { event: {}, context: {}, response: {} };
     await middleware.before!(request as Request);
@@ -142,7 +115,9 @@ describe("error handling tests", () => {
       func(1234 as unknown as string, {} as Request["context"]),
     ).rejects.toMatchObject({
       statusCode: 400,
-      message: JSON.stringify({ message: "Event object failed validation" }),
+      message: JSON.stringify({
+        message: "The event object failed validation",
+      }),
     });
   });
 
@@ -150,7 +125,7 @@ describe("error handling tests", () => {
     const func = middy().use(
       standardSchemaValidator({
         eventSchema: z.string(),
-        options: { errorFormatter: z.prettifyError },
+        errorFormatter: z.prettifyError,
       }),
     );
 
@@ -178,7 +153,7 @@ describe("error handling tests", () => {
       ).resolves.toMatchObject({
         statusCode: 400,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "Event object failed validation" }),
+        body: JSON.stringify({ message: "The event object failed validation" }),
       });
     });
   });
