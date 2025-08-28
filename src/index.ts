@@ -2,6 +2,9 @@ import type { MiddlewareObj, Request } from "@middy/core";
 import { createError } from "@middy/util";
 import type { StandardSchemaV1 as StandardSchema } from "@standard-schema/spec";
 
+type RequestPart = "event" | "context" | "response";
+type ErrorFormatter = (input: StandardSchema.FailureResult) => string;
+
 const modifyDefaults = {
   event: true,
   context: false,
@@ -22,8 +25,8 @@ export const standardSchemaValidator = <
   contextSchema?: C;
   responseSchema?: R;
   options?: {
-    modify?: { event?: boolean; context?: boolean; response?: boolean };
-    errorFormatter?: (input: StandardSchema.FailureResult) => string;
+    modify?: Record<RequestPart, boolean>;
+    errorFormatter?: ErrorFormatter;
   };
 }): MiddlewareObj<
   StandardSchema.InferOutput<E>,
@@ -38,21 +41,16 @@ export const standardSchemaValidator = <
     if (eventSchema) {
       let result = eventSchema["~standard"].validate(request.event);
       if (result instanceof Promise) result = await result;
-
-      if (result.issues) {
+      if (result.issues)
         throw getValidationError(400, "Event", result, errorFormatter);
-      }
       if (modify.event) request.event = result.value;
     }
 
     if (contextSchema) {
       let result = contextSchema["~standard"].validate(request.context);
       if (result instanceof Promise) result = await result;
-
-      if (result.issues) {
+      if (result.issues)
         throw getValidationError(400, "Context", result, errorFormatter);
-      }
-
       if (modify.context) request.context = result.value;
     }
   };
@@ -61,11 +59,8 @@ export const standardSchemaValidator = <
     if (responseSchema) {
       let result = responseSchema["~standard"].validate(request.response);
       if (result instanceof Promise) result = await result;
-
-      if (result.issues) {
-        throw getValidationError(500, "Response", result);
-      }
-
+      if (result.issues)
+        throw getValidationError(500, "Response", result, errorFormatter);
       if (modify.response) request.response = result.value;
     }
   };
@@ -80,7 +75,7 @@ const getValidationError = (
   code: number,
   objectName: string,
   result: StandardSchema.FailureResult,
-  errorFormatter?: (input: StandardSchema.FailureResult) => string,
+  errorFormatter?: ErrorFormatter,
 ) => {
   const message = errorFormatter
     ? errorFormatter(result)

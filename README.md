@@ -1,6 +1,6 @@
 # Middy-Standard-Schema
 
-[![CI](https://github.com/flubber2077/middy-standard-schema/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/flubber2077/middy-standard-schema/actions/workflows/ci.yml)[![Module type: CJS+ESM](https://img.shields.io/badge/module%20type-cjs%2Besm-brightgreen)](https://github.com/voxpelli/badges-cjs-esm)[![install size](https://packagephobia.com/badge?p=middy-standard-schema)](https://packagephobia.com/result?p=middy-standard-schema)
+[![CI](https://github.com/flubber2077/middy-standard-schema/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/flubber2077/middy-standard-schema/actions/workflows/ci.yml)[![Module type: CJS+ESM](https://img.shields.io/badge/module%20type-cjs%2Besm-brightgreen)](https://github.com/voxpelli/badges-cjs-esm)[![package size](https://badgen.net/bundlephobia/minzip/middy-standard-schema)](https://bundlephobia.com/result?p=middy-standard-schema)
 
 A Standard-Schema based Middy Validator
 

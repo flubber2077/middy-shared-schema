@@ -1,5 +1,5 @@
-- have generated middleware know if `before` and `after` are undefined or not
 
-much later todos
 
-- format error messages depending on package used
+much later todos:
+
+- Write custom error formatter
