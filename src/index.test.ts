@@ -32,7 +32,6 @@ describe("validation failure test suite", () => {
   const sch = z.object({});
   test.each([
     ["event", "before", 400],
-    ["context", "before", 400],
     ["response", "after", 500],
   ] as const)(
     "if validation fails in %s, proper error is thrown",
@@ -57,7 +56,6 @@ describe("modify objects test suite", () => {
   const modifyingSchema = z.object({}).transform(() => "exists");
   const middleware = standardSchemaValidator({
     eventSchema: modifyingSchema,
-    contextSchema: modifyingSchema as StandardSchema<Request["context"]>,
     responseSchema: modifyingSchema,
   });
   const request = {
@@ -72,7 +70,6 @@ describe("modify objects test suite", () => {
     await middleware.before!(request as unknown as Request);
     expect(request).toMatchObject({
       event: "exists",
-      context: "exists",
       response: {},
     });
   });
@@ -81,7 +78,6 @@ describe("modify objects test suite", () => {
     await middleware.after!(request as unknown as Request);
     expect(request).toMatchObject({
       event: {},
-      context: {},
       response: 'exists',
     });
   });
@@ -93,14 +89,12 @@ describe("asynchronous tests", () => {
 
     const middleware = standardSchemaValidator({
       eventSchema: schema,
-      contextSchema: schema as StandardSchema<Request["context"]>,
       responseSchema: schema,
     });
     const request = { event: {}, context: {}, response: {} };
     await middleware.before!(request as Request);
     await middleware.after!(request as Request);
-    expect(request.event).toBe("hi");
-    expect(request.context).toBe("hi");
+    expect(request.event).toBe("hi");;
     expect(request.response).toBe("hi");
   });
 });

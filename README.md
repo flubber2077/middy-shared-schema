@@ -17,33 +17,35 @@ npm install middy-standard-schema
 After installation, use as a standard middy middleware with any compatible schema.
 
 ```typescript
+import z from "zod";
+
 export const eventSchema = z.object({
   body: z.object({
     HelloWorld: z.string(),
   }),
 });
 
-export const handler = middy(lambdaFunction).use(
-  standardSchemaValidator({ eventSchema }),
-);
+export const handler = middy()
+  .use(standardSchemaValidator({ eventSchema }))
+  .handler(lambdaFunction);
 ```
 
 ## Features
 
 ### Supports any Standard-Schema compatible validation library
 
+Whether it's Zod, Arktype, Valibot, Joi, Yup, or [any other compatible library](https://standardschema.dev/#what-schema-libraries-implement-the-spec), middy-standard-schema works without any further configuration.
+
 ```typescript
 import z from "zod";
 import { type } from "arktype";
 import * as v from "valibot";
 
-const validator = standardSchemaValidator({
-  beforeSchema: z.object(),
-  contextSchema: type({}),
-  responseSchema: v.object({}),
-});
-
-middy(lambdaFunction).use(validator);
+middy()
+  .use(standardSchemaValidator({ eventSchema: z.object() }))
+  .use(standardSchemaValidator({ eventSchema: type({}) }))
+  .use(standardSchemaValidator({ eventSchema: v.object({}) }))
+  .handler(lamdaFunction);
 ```
 
 ### Intelligently merges into Event type
@@ -66,6 +68,30 @@ middy<APIGatewayProxyEvent>()
 ### Transform Requests on Command
 
 By default, events will be transformed by the validation. This behavior can be modified to also transform Contexts and Responses, or turned off altogether to just allow for non-transforming validation.
+
+### Error Formatting
+
+You can use your validator's error formatter, or pass in your own.
+
+```typescript
+import z from "zod";
+import * as v from "valibot";
+
+middy()
+  .use(
+    standardSchemaValidator({
+      eventSchema: z.object(),
+      errorFormatter: z.prettifyError,
+    }),
+  )
+  .use(
+    standardSchemaValidator({
+      eventSchema: v.object({}),
+      errorFormatter: v.flatten,
+    }),
+  )
+  .handler(lamdaFunction);
+```
 
 ## Contribution
 
