@@ -17,8 +17,8 @@ npm install middy-standard-schema
 After installation, use as a standard middy middleware with any compatible schema.
 
 ```typescript
-import middy from '@middy/core'
-import httpErrorHandler from '@middy/http-error-handler'
+import middy from "@middy/core";
+import httpErrorHandler from "@middy/http-error-handler";
 import z from "zod";
 
 export const eventSchema = z.object({
