@@ -1,5 +1,11 @@
 # middy-standard-schema
 
+## 0.2.0
+
+### Minor Changes
+
+- 6cd51ec: simplify inputs and reduce package size
+
 ## 0.1.3
 
 ### Patch Changes
